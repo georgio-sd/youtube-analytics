@@ -1,5 +1,6 @@
 import googleapiclient.discovery
 import googleapiclient.errors
+import re
 
 from secret_key import *
 
@@ -16,7 +17,7 @@ def video_comments(video_id):
     while video_threads:
         # get top level comments
         for thread in video_threads['items']:
-            comment = thread['snippet']['topLevelComment']['snippet']['textDisplay']
+            comment = re.sub('\n', ' ', thread['snippet']['topLevelComment']['snippet']['textDisplay'])
             replycount = thread['snippet']['totalReplyCount']
             # get replies of a top level comment
             if replycount > 0:
@@ -27,7 +28,14 @@ def video_comments(video_id):
                 ).execute()
                 while video_thread_replies:
                     for reply in video_thread_replies['items']:
-                        replies.append(reply['snippet']['textDisplay'])
+                        s = re.sub('[\u200b]*@@[a-zA-Z0-9_-]+', ' ', reply['snippet']['textDisplay'])
+                        s = re.sub('[\u200d]', ' ', s)
+                        s = re.sub('[\u200b]', ' ', s)
+                        s = re.sub('\n', ' ', s)
+                        replies.append(s)
+                        #print(reply['snippet']['textDisplay'])
+                        #print(re.sub('@@[a-zA-Z0-9_-]+', ' ', reply['snippet']['textDisplay']), end = '\n\n')
+
                     # check if there is more replies
                     if 'nextPageToken' in video_thread_replies:
                         video_thread_replies = youtube.comments().list(
