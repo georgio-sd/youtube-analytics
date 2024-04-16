@@ -2,19 +2,17 @@ import os
 import googleapiclient.discovery
 import googleapiclient.errors
 
-from secret_key import youtube_api_key
+from secret_key import *
 
 api_service_name = "youtube"
 api_version = "v3"
-YOUTUBE_API_KEY = youtube_api_key
-
 
 youtube = googleapiclient.discovery.build(
-    api_service_name, api_version, developerKey=YOUTUBE_API_KEY)
+    api_service_name, api_version, developerKey=youtube_api_key)
 
 request = youtube.commentThreads().list(
     part="snippet",
-    videoId="SIm2W9TtzR0",
+    videoId=youtube_video_id,
     maxResults=100
 )
 response = request.execute()
