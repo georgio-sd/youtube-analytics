@@ -4,16 +4,6 @@ import re
 
 from secret_key import *
 
-from langchain_openai import ChatOpenAI
-llm = ChatOpenAI(
-    model_name = "gpt-3.5-turbo",
-    temperature = 0.6,
-    max_tokens = 512,
-    api_key = chatgpt_api_key)
-
-answer = llm.invoke("how can langsmith help with testing?")
-print(answer)
-
 def video_comments(video_id):
     comments = []
     topic = []
@@ -77,3 +67,29 @@ video_id = youtube_video_id
 # Call function
 comments = video_comments(video_id)
 print(comments)
+
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    model_name = "gpt-3.5-turbo",
+    temperature = 0,
+    api_key = chatgpt_api_key)
+
+prompt = ChatPromptTemplate.from_template("""
+Контекст: {context}
+Вопрос: {question}
+Комментарий: {comment}""")
+output_parser = StrOutputParser()
+chain = prompt | llm | output_parser
+
+context  = """В 21-м веке произошла полномасшабная война между Россией и Украиной, на видео в youtube про эту войну зритель оставил комментарий."""
+question = """Оцени комментарий зрителя по шкале от одного до девяти с точки зрения степени его поддержки одной из сторон конфликта,
+              где один будет означать очень сильная поддержка России, девять - очень сильная поддержка Украины и пять - нейтральная позиция.
+              Учти, что автор может иронизировать. Если сторону поддержки определить затрудняештся, считай ее нейтральной. Прокоментируй результат твоей оценки,
+              но не давай информацию про которую тебя не спрашивали."""
+comment  = """Россия должна владеть всем миром, а 200 окружающих  стран её провоцируют тем, что хотят иметь суверенитет и своё национальное самосознание. Вполне объективная причина для нападения."""
+
+print(chain.invoke({"context": context, "question": question, "comment": comment}))
