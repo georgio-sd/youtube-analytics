@@ -4,16 +4,6 @@ import re
 
 from secret_key import *
 
-from langchain_openai import ChatOpenAI
-llm = ChatOpenAI(
-    model_name = "gpt-3.5-turbo",
-    temperature = 0.6,
-    max_tokens = 512,
-    api_key = chatgpt_api_key)
-
-answer = llm.invoke("how can langsmith help with testing?")
-print(answer)
-
 def video_comments(video_id):
     comments = []
     topic = []
@@ -77,3 +67,22 @@ video_id = youtube_video_id
 # Call function
 comments = video_comments(video_id)
 print(comments)
+
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(
+    model_name = "gpt-3.5-turbo",
+    temperature = 0,
+    api_key = chatgpt_api_key)
+
+prompt = ChatPromptTemplate.from_template("""
+Контекст: {context}
+Вопрос: {question}
+Комментарий: {comment}""")
+output_parser = StrOutputParser()
+chain = prompt | llm | output_parser
+
+print(chain.invoke({"context": context, "question": question, "comment": comment}))
